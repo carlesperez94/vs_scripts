@@ -1,0 +1,15 @@
+system: '$PDB'
+working_folder: "$NAME"
+rmsd_pdb: '$PDB'
+log: false
+chain: 'L'
+resname: 'LIG'
+adaptive_restart: false
+seed: 12345
+ca_constr: 1
+cpus: 32
+induced_fit: true
+temperature: 1500
+box_radius: 4
+iterations: 3
+steps: 100

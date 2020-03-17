@@ -1,0 +1,20 @@
+#!/bin/bash
+#BSUB -J $NAME
+#BSUB -W 24:00
+#BSUB -R"span[ptile=16]"
+#BSUB -x # Exclusive use
+#BSUB -eo ifd.err
+#BSUB -oo ifd.out
+#BSUB -n 32
+
+module purge
+module load intel gcc openmpi/1.8.1 boost/1.63.0 python/2.7.3 MKL/11.3 GTK+3/3.2.4
+
+export PYTHONPATH=/gpfs/projects/bsc72/PELEPlatform/1.2.0/nord3:/gpfs/projects/bsc72/adaptiveSampling/bin_nord/v1.6.2/:$PYTHONPATH
+export PYTHONPATH=/gpfs/projects/bsc72/lib/site-packages_mn3:$PYTHONPATH
+
+export MPLBACKEND=Agg
+export OMPI_MCA_coll_hcoll_enable=0
+export OMPI_MCA_mtl=^mxm
+
+python -m pele_platform.main $IFD_FILE

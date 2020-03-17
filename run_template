@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH --job-name=$NAME
+#SBATCH --output=mpi_%j.out
+#SBATCH --error=mpi_%j.err
+#SBATCH --ntasks=32
+#SBATCH --time=00-12:00:00
+
+module purge
+module load intel mkl impi gcc
+module load python/2.7.13
+module load boost/1.64.0_py2
+module load python/2.7.13 glew/2.1.0 glm/0.9.9.6 qt/5.12.1
+export PYTHONPATH="/gpfs/projects/bsc72/PELEPlatform/1.2.1/MN4/:/gpfs/projects/bsc72/adaptiveSampling/bin/v1.6.2/:/gpfs/projects/bsc72/lib_msm/site-packages/:/gpfs/projects/bsc72/lib/site-packages"
+
+python -m pele_platform.main $IFD_FILE 
