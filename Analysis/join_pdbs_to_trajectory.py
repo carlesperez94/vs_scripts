@@ -16,7 +16,7 @@ def parse_args():
 
 def read_pdb_files(pattern):
     pdbs = []
-    all = glob.glob(pattern)
+    all = sorted(glob.glob(pattern))
     print(all)
     for i in all:
         with open(i) as file:
