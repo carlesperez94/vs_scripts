@@ -1,5 +1,7 @@
 import argparse
 import glob
+import re
+import os
 
 import pandas as pd
 
@@ -23,7 +25,7 @@ def parse_args():
     
     args = parser.parse_args()
 
-    return args.reports, args.quantile, args.filter_by, args.lim_low, args.lim_high
+    return args.reports, args.criteria, args.quantile, args.filter_by, args.lim_low, args.lim_high
 
 
 def pele_report2pandas(path):
@@ -66,10 +68,10 @@ def compute_mean_quantile(dataframe, column, quantile_value=0.25, limit_col=None
 def main(path, criteria, quantile=0.25, limit_col=None, limit_up=None, limit_down=None):
     df = pele_report2pandas(path)
     mean = compute_mean_quantile(df, criteria, quantile, limit_col, limit_up, limit_down)
-    print(mean)
+    print("{}\t{}".format(path, mean))
 
 if __name__ == '__main__':
-    path, criteria, quantile, limit_col, limit_up, limit_down = parse_arguments()
+    path, criteria, quantile, limit_col, limit_down, limit_up = parse_args()
     main(path, criteria, quantile, limit_col, limit_up, limit_down)
     
     
