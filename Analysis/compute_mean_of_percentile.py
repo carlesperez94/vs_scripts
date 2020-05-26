@@ -14,7 +14,7 @@ def parse_args():
     parser.add_argument("--criteria", type=str, default='Binding Energy',
                         help="Criteria we want to compute. "
                              "Must be a column of the report. i.e: Binding Energy.")
-    parser.add_argument("--quantile", type=str, default=0.25,
+    parser.add_argument("--quantile", type=float, default=0.25,
                         help="Percentile to filter the sample. i.e: 0.25.")
     parser.add_argument("--filter_by", type=str, default=None,
                         help="Column of the report to create a subset, if needed.")
@@ -22,10 +22,12 @@ def parse_args():
                         help="Lowest threshold value to create the subset")
     parser.add_argument("--lim_high", type=str, default=None,
                         help="Highest threshold value to create the subset")
+    parser.add_argument("--lim_epoch", type=str, default=None,
+                        help="Epochs to compute, in case you do not want to use them all.")
     
     args = parser.parse_args()
 
-    return args.reports, args.criteria, args.quantile, args.filter_by, args.lim_low, args.lim_high
+    return args.reports, args.criteria, args.quantile, args.filter_by, args.lim_low, args.lim_high, args.lim_epoch
 
 
 def pele_report2pandas(path):
@@ -41,8 +43,8 @@ def pele_report2pandas(path):
         tmp_data = pd.read_csv(report, sep='    ', engine='python')
         tmp_data = tmp_data.iloc[1:]  # We must discard the first row
         processor = re.findall('\d+$'.format(path), report)
-        tmp_data['Processor'] = processor[0]
-        tmp_data['epoch'] = report.split("/")[-2]
+        tmp_data['Processor'] = int(processor[0])
+        tmp_data['epoch'] = int(report.split("/")[-2])
         data.append(tmp_data)
         traj_path = os.path.join(os.path.dirname(report),
                                  "trajectory_{}.xtc".format(processor[0]))
@@ -51,7 +53,8 @@ def pele_report2pandas(path):
     return result
 
 
-def compute_mean_quantile(dataframe, column, quantile_value=0.25, limit_col=None, limit_up=None, limit_down=None):
+def compute_mean_quantile(dataframe, column, quantile_value=0.25, limit_col=None, limit_up=None, 
+                          limit_down=None, lim_epoch=None):
     if limit_col:
         if not limit_up:
             raise ValueError("You must fill the argument '--limit_up'!")
@@ -59,20 +62,22 @@ def compute_mean_quantile(dataframe, column, quantile_value=0.25, limit_col=None
             raise ValueError("You must fill the argument '--limit_down'!")
         dataframe = dataframe[dataframe[limit_col] > float(limit_down)]
         dataframe = dataframe[dataframe[limit_col] < float(limit_up)]
+    if lim_epoch:
+        dataframe = dataframe[dataframe['epoch'] <= int(lim_epoch)]
     dataframe = dataframe[dataframe[column] < dataframe[column].quantile(quantile_value)]
     dataframe = dataframe[column]
     mean_subset = dataframe.mean()
     return mean_subset
 
 
-def main(path, criteria, quantile=0.25, limit_col=None, limit_up=None, limit_down=None):
+def main(path, criteria, quantile=0.25, limit_col=None, limit_up=None, limit_down=None, lim_epoch=None):
     df = pele_report2pandas(path)
-    mean = compute_mean_quantile(df, criteria, quantile, limit_col, limit_up, limit_down)
+    mean = compute_mean_quantile(df, criteria, quantile, limit_col, limit_up, limit_down, lim_epoch)
     print("{}\t{}".format(path, mean))
 
 if __name__ == '__main__':
-    path, criteria, quantile, limit_col, limit_down, limit_up = parse_args()
-    main(path, criteria, quantile, limit_col, limit_up, limit_down)
+    path, criteria, quantile, limit_col, limit_down, limit_up, epoch = parse_args()
+    main(path, criteria, quantile, limit_col, limit_up, limit_down, epoch)
     
     
 
